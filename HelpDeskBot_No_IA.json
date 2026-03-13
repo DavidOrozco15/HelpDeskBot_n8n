@@ -12,7 +12,7 @@
       "typeVersion": 1.2,
       "position": [
         -1872,
-        80
+        -16
       ],
       "id": "b07e8c2a-82ef-477e-b4da-1bc49dad2ddf",
       "name": "Telegram Trigger",
@@ -66,7 +66,7 @@
       "typeVersion": 3.4,
       "position": [
         -1648,
-        80
+        -16
       ],
       "id": "257f3229-793b-4ff6-9136-3da436a5f8be",
       "name": "Edit Fields"
@@ -97,7 +97,7 @@
       "typeVersion": 4.7,
       "position": [
         -1424,
-        80
+        -16
       ],
       "id": "c31857dc-02e1-4ff9-a470-02938a11194a",
       "name": "Leer Sesion",
@@ -135,7 +135,7 @@
       "typeVersion": 4.7,
       "position": [
         -1200,
-        80
+        -16
       ],
       "id": "45e6ce1c-04d7-4d73-838f-e8370b551a41",
       "name": "Leer Usuario",
@@ -155,7 +155,7 @@
       "typeVersion": 2,
       "position": [
         -976,
-        80
+        -16
       ],
       "id": "6c6270e2-e2b0-4eff-a9cb-df8bbc8ad223",
       "name": "Logica"
@@ -286,7 +286,7 @@
       "typeVersion": 3.4,
       "position": [
         -752,
-        32
+        -64
       ],
       "id": "650f6fc7-6961-41fc-b66d-7a4b03d1d1a6",
       "name": "Switch"
@@ -389,8 +389,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        -416,
-        192
+        -304,
+        -16
       ],
       "id": "9d57f161-dd30-4b5a-af25-055c2e8778f6",
       "name": "Guardar Ticket",
@@ -426,7 +426,7 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        -496,
+        -528,
         -304
       ],
       "id": "705c844d-e43e-49e0-8c10-6ac64bf15952",
@@ -446,7 +446,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -288,
+        -304,
         -304
       ],
       "id": "a0ab567b-4af3-465e-b06c-cec7be18a1f6",
@@ -477,8 +477,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        -512,
-        400
+        -528,
+        176
       ],
       "id": "1f1b782f-c6c9-4b8d-b620-8933a15b0f8d",
       "name": "MIs Solicitudes",
@@ -498,7 +498,7 @@
       "typeVersion": 2,
       "position": [
         -304,
-        400
+        176
       ],
       "id": "b3aad4ac-be89-4a85-86ea-416605482049",
       "name": "Formatear Solicitudes"
@@ -520,8 +520,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        -544,
-        656
+        -528,
+        368
       ],
       "id": "6dca3e93-28fb-400d-8925-9c3730f1ef77",
       "name": "Leer Reportes",
@@ -540,8 +540,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -272,
-        656
+        -304,
+        368
       ],
       "id": "9e82a5da-5993-4719-9488-34024254909a",
       "name": "Formatear Reporte"
@@ -554,7 +554,7 @@
       "typeVersion": 3.2,
       "position": [
         -80,
-        32
+        -64
       ],
       "id": "81826844-8f2c-466a-9ad5-e2b7f7b55937",
       "name": "Merge",
@@ -573,7 +573,7 @@
       "typeVersion": 1.2,
       "position": [
         368,
-        80
+        -16
       ],
       "id": "8dfa9fe3-da94-4e71-bbf1-90cf95d0aa87",
       "name": "Enviar Respuesta",
@@ -611,7 +611,7 @@
       "typeVersion": 4.7,
       "position": [
         592,
-        80
+        -16
       ],
       "id": "ce956120-ab14-4659-9ecf-63d03cd1d4f6",
       "name": "Buscar Sesion",
@@ -652,7 +652,7 @@
       "typeVersion": 2.3,
       "position": [
         816,
-        80
+        -16
       ],
       "id": "f6bbb02e-9b51-44e2-8512-7682531f8fc1",
       "name": "Existe la sesion?"
@@ -740,7 +740,7 @@
       "typeVersion": 4.7,
       "position": [
         1040,
-        -16
+        -112
       ],
       "id": "fad8d17e-3f70-4e53-a4fb-a1bc3924f5f5",
       "name": "Actualizar Sesion",
@@ -820,7 +820,7 @@
       "typeVersion": 4.7,
       "position": [
         1040,
-        176
+        80
       ],
       "id": "b6be931e-ef1f-4ec1-87ad-faf295b43c7c",
       "name": "Crear Sesion",
@@ -837,7 +837,7 @@
       "typeVersion": 3.2,
       "position": [
         1264,
-        80
+        -16
       ],
       "id": "de7b07d9-bbeb-492f-83e7-dd40265e40a3",
       "name": "Merge Sesion",
@@ -922,7 +922,7 @@
       "typeVersion": 4.7,
       "position": [
         1488,
-        80
+        -16
       ],
       "id": "f5c87ef2-df5e-4546-89d0-97d84abf0096",
       "name": "Registrar Log",
@@ -958,10 +958,58 @@
       "typeVersion": 3.4,
       "position": [
         144,
-        80
+        -16
       ],
       "id": "f1ec0e9d-55fc-4280-b846-8c861557ecfd",
       "name": "Normalizar Datos"
+    },
+    {
+      "parameters": {
+        "content": "## 📥 ENTRADA Y VALIDACIÓN\n\nCada mensaje recibido en **Telegram** activa el flujo.\n\nSe extraen los datos del usuario: `chatId`, `username` y `texto`.\n\nSe consulta **Google Sheets** para saber:\n- En qué paso del flujo quedó el usuario (**sesión**)\n- Si está autorizado para usar el bot (**usuarios activos**)\n\nEl nodo **Logica** decide qué responder según el estado actual.",
+        "height": 272,
+        "width": 464,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1504,
+        -336
+      ],
+      "id": "31066cee-cd4a-4c4d-80c5-46b6cbcbfc1d",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## ⚙️ PROCESAMIENTO\n\nEl **Switch** dirige el flujo por 5 caminos según la acción:\n\n- `solo_responder` → responde sin tocar Sheets\n- `crear_ticket` → guarda el ticket en SOLICITUDES\n- `consultar_ticket` → busca el ticket por ID\n- `mis_solicitudes` → lista los tickets del usuario\n- `reportes` → genera estadísticas generales\n\nTodas las ramas se unen en el **Merge** para continuar.",
+        "height": 272,
+        "width": 416,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        -720
+      ],
+      "id": "1c99f800-40c9-41f7-ac92-5acde3e07996",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## 📤 RESPUESTA Y MEMORIA\n\nSe normaliza el mensaje y se envía la respuesta por **Telegram**.\n\nLuego se guarda el nuevo estado del usuario en **SESIONES**\npara que el bot recuerde en qué paso quedó la próxima vez.\n\nFinalmente se registra cada interacción en **LOGS**\npara tener trazabilidad completa del uso del bot.",
+        "height": 224,
+        "width": 448,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        560,
+        -480
+      ],
+      "id": "e8c9d179-a8ba-47f1-a852-9966ab083bc5",
+      "name": "Sticky Note2"
     }
   ],
   "pinData": {},
@@ -1239,7 +1287,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "79a5b6e4-3218-48e5-a7b6-8713945ff43c",
+  "versionId": "3074d307-f69d-435e-8557-106b67b02562",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "613cbc1bbc9fe9503bb32384b3b54e4bb9d0c39383f77838930f3fdda885818a"

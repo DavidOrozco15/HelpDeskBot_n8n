@@ -221,6 +221,21 @@
           "name": "Credenciales no Ia"
         }
       }
+    },
+    {
+      "parameters": {
+        "content": "## 🔄 CAMBIO AUTOMÁTICO DE ESTADO\n\nEl **Schedule Trigger** ejecuta el flujo cada **1 minuto**.\n\nSe leen todos los tickets de **SOLICITUDES** y se calcula\nel tiempo transcurrido desde su creación:\n\n- `Abierto` → **En proceso** después de **5 minutos**\n- `En proceso` → **Cerrado** después de **10 minutos**\n\nSi hay tickets que actualizar, se modifican directamente\nen **Google Sheets** sin intervención del usuario.",
+        "height": 320,
+        "width": 448
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        256,
+        -496
+      ],
+      "id": "b94080cc-fa27-4bc3-8051-927042af7b05",
+      "name": "Sticky Note"
     }
   ],
   "pinData": {},
@@ -276,7 +291,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "517b857b-5764-45e0-881f-63c0c0f732d4",
+  "versionId": "7d79932c-0871-46ff-8f57-24741d92812f",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "613cbc1bbc9fe9503bb32384b3b54e4bb9d0c39383f77838930f3fdda885818a"
