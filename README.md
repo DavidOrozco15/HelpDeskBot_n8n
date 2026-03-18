@@ -216,6 +216,22 @@ Mostrar información del ticket con estado actualizado
 
 ---
 
+## 📊 Test descripción reportes
+
+La opción 4 del menú principal ahora tiene un submenú de reportes. Antes iba directo a mostrar estadísticas generales, pero se le agregó una opción nueva llamada **Reporte por tipo de solicitud**.
+
+Lo que hace es simple: cuando el usuario escribe `4` y luego `1`, el bot va a buscar todos los tickets guardados y los agrupa por tipo (Soporte técnico, Administrativa, Consulta general). Para cada tipo muestra cuántos hay en total, cuántos están abiertos, en proceso y cerrados. También muestra cuál es el tipo más frecuente y cuántas veces ha interactuado ese usuario con el bot.
+
+Para hacerlo se conectaron dos fuentes de datos al mismo tiempo — los tickets y los registros de uso — y se unieron antes de procesar. Así el bot puede calcular todo de una sola vez y armar el mensaje con el resumen.
+
+### Evidencia de funcionamiento
+
+![Menú de reportes y generación](reporte_menu.png)
+
+![Resultado del reporte por tipo](reporte_resultado.png)
+
+---
+
 ## 📝 Notas importantes
 
 - No eliminar filas de la hoja **SESIONES** — contiene el estado conversacional activo de cada usuario

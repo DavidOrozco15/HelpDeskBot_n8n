@@ -12,7 +12,7 @@
       "typeVersion": 1.2,
       "position": [
         -1872,
-        -16
+        272
       ],
       "id": "b07e8c2a-82ef-477e-b4da-1bc49dad2ddf",
       "name": "Telegram Trigger",
@@ -66,7 +66,7 @@
       "typeVersion": 3.4,
       "position": [
         -1648,
-        -16
+        272
       ],
       "id": "257f3229-793b-4ff6-9136-3da436a5f8be",
       "name": "Edit Fields"
@@ -97,7 +97,7 @@
       "typeVersion": 4.7,
       "position": [
         -1424,
-        -16
+        272
       ],
       "id": "c31857dc-02e1-4ff9-a470-02938a11194a",
       "name": "Leer Sesion",
@@ -135,7 +135,7 @@
       "typeVersion": 4.7,
       "position": [
         -1200,
-        -16
+        272
       ],
       "id": "45e6ce1c-04d7-4d73-838f-e8370b551a41",
       "name": "Leer Usuario",
@@ -149,13 +149,13 @@
     },
     {
       "parameters": {
-        "jsCode": "// ─── 1. Recoger datos ───\nconst vars      = $('Edit Fields').first().json;\nconst chatId    = vars.chatId;\nconst username  = vars.username;\nconst firstName = vars.firstName;\nconst text      = vars.text.toLowerCase().trim();\nconst timestamp = vars.timestamp;\n\n// ─── 2. Parsear sesión ───\nconst sesionItems = $('Leer Sesion').all();\nlet estado       = 'MENU';\nlet datosTmp     = {};\nlet sesionExiste = false;\n\nif (sesionItems.length > 0 && sesionItems[0].json.telegram_user) {\n  estado       = sesionItems[0].json.estado || 'MENU';\n  sesionExiste = true;\n  try {\n    datosTmp = JSON.parse(sesionItems[0].json.datos_temp || '{}');\n  } catch(e) { datosTmp = {}; }\n}\n\n// ─── 3. Validar usuario ───\nconst userItems = $('Leer Usuario').all();\nlet usuarioActivo = false;\nlet nombreUsuario = firstName;\n\nif (userItems.length > 0 && userItems[0].json.telegram_user) {\n  const u = userItems[0].json;\n  usuarioActivo = (u.activo === true || u.activo === 'TRUE' || u.activo === 'true');\n  nombreUsuario = u.nombre || firstName;\n}\n\nif (!usuarioActivo) {\n  return [{\n    json: {\n      chatId, username,\n      mensaje: `⛔ Lo siento, tu usuario no está registrado o no está activo.\\n\\nContacta al administrador.`,\n      nuevo_estado: 'MENU',\n      nuevo_datos_temp: '{}',\n      accion: 'solo_responder',\n      sesionExiste,\n      log_pantalla: estado,\n      log_opcion: text,\n      log_resultado: 'usuario_inactivo'\n    }\n  }];\n}\n\n// ─── 4. Textos ───\nconst MENU_PRINCIPAL = `🤖 *HelpDeskBot*\\n\\n_Por favor, escribe el número de la opción que deseas usar:_\\n\\n🆘 *0* · Ayuda\\n🆕 *1* · Crear solicitud\\n🔎 *2* · Consultar ticket\\n📁 *3* · Mis solicitudes\\n📈 *4* · Reportes\\n🔧 *5* · Configuración`;\nconst MENU_CREAR = `📝 *Nueva Solicitud*\\n\\n_Selecciona el tipo de solicitud:_\\n\\n🖥️ *1* · Soporte técnico \\n_problemas con equipos o sistemas_\\n\\n📋 *2* · Solicitud administrativa \\n_trámites y gestiones internas_\\n\\n💬 *3* · Consulta general \\n_dudas o preguntas diversas_\\n\\n❌ *9* · Cancelar`;\nconst MENU_PRIORIDAD = `⚡ *Prioridad*\\n\\n_Indica el nivel de urgencia de tu solicitud:_\\n\\n🔴 *1* · Alta  \\n_requiere atención inmediata_\\n\\n🟠 *2* · Media \\n_puede atenderse en el corto plazo_\\n\\n🟢 *3* · Baja \\n_sin urgencia, puede esperar_\\n\\n❌ *9* · Cancelar`;\nconst AYUDA = `ℹ️ *Ayuda — HelpDeskBot*\\n\\n🤖 _Soy un bot de soporte interno. Puedo ayudarte a gestionar tus solicitudes de forma rápida y ordenada._\\n\\n*¿Qué puedo hacer?*\\n\\n🆕 *Crear* tickets de soporte técnico, administrativo o consultas\\n🔎 *Consultar* el estado de cualquier ticket por su ID\\n📁 *Ver* todas tus solicitudes registradas\\n📈 *Reportes* con estadísticas generales\\n\\n*¿Cómo navegar?*\\n\\n📌 Escribe el _número_ de la opción que deseas usar\\n❌ Escribe _9_ en cualquier momento para cancelar\\n🏠 Escribe _9_ en algunos menus para volver al inicio\\n\\n⚙️ _Los estados se actualizan automáticamente: Abierto → En proceso → Cerrado_`;\nconst VOLVER = `\\n\\n*Escribe 9 para volver al inicio.*`;\n\nconst TIPOS = { '1': 'Soporte técnico', '2': 'Solicitud administrativa', '3': 'Consulta general' };\nconst PRIORIDADES = { '1': 'Alta', '2': 'Media', '3': 'Baja' };\n\nfunction generarTicketId() {\n  const fecha = new Date().toISOString().slice(0,10).replace(/-/g,'');\n  const rand  = Math.floor(Math.random() * 9000) + 1000;\n  return `TKT-${fecha}-${rand}`;\n}\n\nlet mensaje          = '';\nlet nuevo_estado     = 'MENU';\nlet nuevo_datos_temp = {};\nlet accion           = 'solo_responder';\nlet ticket_data      = null;\nlet consulta_id      = null;\nlet log_resultado    = 'ok';\n\n// ─── Estados ───\nif (estado === 'MENU') {\n  switch(text) {\n    case '0': mensaje = AYUDA; break;\n    case '1': mensaje = MENU_CREAR; nuevo_estado = 'CREAR_TIPO'; break;\n    case '2':\n      mensaje = `🔎 *Consultar Ticket*\\n\\nEscribe el ID del ticket que deseas consultar.\\n\\n📌 _Ejemplo: TKT-20240115-1234_\\n\\n❌ *9* · Cancelar`;\n      nuevo_estado = 'CONSULTAR_ID'; break;\n    case '3': accion = 'mis_solicitudes'; break;\n    case '4': accion = 'reportes'; break;\n    case '5': mensaje = `⚙️ *Configuración*\\n\\nNo hay opciones disponibles.${VOLVER}`; break;\n    case '9':\n    case 'menú':\n    case 'menu':\n      mensaje = MENU_PRINCIPAL; break;\n    default:\n      mensaje = !sesionExiste\n        ? `Hola, soy HelpDeskBot 👋\\n\\nEstoy aquí para ayudarte con solicitudes de soporte.\\n\\n${MENU_PRINCIPAL}`\n        : `⚠️ Opción no reconocida.${VOLVER}`;\n      log_resultado = 'opcion_invalida';\n  }\n}\nelse if (estado === 'CREAR_TIPO') {\n  if (text === '9') { mensaje = `❌ Cancelado.${VOLVER}`; log_resultado = 'cancelado'; }\n  else if (['1','2','3'].includes(text)) { nuevo_datos_temp = { tipo: TIPOS[text] }; mensaje = MENU_PRIORIDAD; nuevo_estado = 'CREAR_PRIORIDAD'; }\n  else { mensaje = `⚠️ Opción inválida.\\n\\n${MENU_CREAR}`; nuevo_estado = 'CREAR_TIPO'; log_resultado = 'opcion_invalida'; }\n}\nelse if (estado === 'CREAR_PRIORIDAD') {\n  if (text === '9') { mensaje = `❌ Cancelado.${VOLVER}`; nuevo_datos_temp = {}; log_resultado = 'cancelado'; }\n  else if (['1','2','3'].includes(text)) { nuevo_datos_temp = { ...datosTmp, prioridad: PRIORIDADES[text] }; mensaje = `📝 *Descripción*\\n\\nEscribe una descripción clara de tu solicitud.\\n\\n📌 _Mínimo 10 caracteres_\\n\\n❌ *9* · Cancelar`; nuevo_estado = 'CREAR_DESCRIPCION'; }\n  else { mensaje = `⚠️ Opción inválida.\\n\\n${MENU_PRIORIDAD}`; nuevo_estado = 'CREAR_PRIORIDAD'; log_resultado = 'opcion_invalida'; }\n}\nelse if (estado === 'CREAR_DESCRIPCION') {\n  if (text === '9') { mensaje = `❌ Cancelado.${VOLVER}`; nuevo_datos_temp = {}; log_resultado = 'cancelado'; }\n  else if (text.length < 10) { mensaje = `⚠️ *Descripción muy corta*\\n\\nPor favor escribe al menos *10 caracteres*.\\n\\n📝 Intenta ser específico sobre el problema.`; nuevo_estado = 'CREAR_DESCRIPCION'; log_resultado = 'descripcion_corta'; }\n  else {\n    const desc = $('Edit Fields').first().json.text.trim();\n    nuevo_datos_temp = { ...datosTmp, descripcion: desc };\n    const fechaPreview = new Date().toISOString().slice(0,19).replace('T',' ');\n    mensaje = `📋 *Resumen de tu solicitud*\\n\\n🖥️ *Tipo:* ${datosTmp.tipo}\\n⚡ *Prioridad:* ${datosTmp.prioridad}\\n📄 *Descripción:* ${desc}\\n📅 *Fecha:* ${fechaPreview}\\n\\n¿Confirmas que deseas guardar esta solicitud?\\n\\n✅ *S* · Confirmar\\n❌ *N* · Cancelar`;\n    nuevo_estado = 'CREAR_CONFIRMAR';\n  }\n}\nelse if (estado === 'CREAR_CONFIRMAR') {\n  if (text === 'n' || text === 'no' || text === '9') { mensaje = `❌ Solicitud cancelada.${VOLVER}`; nuevo_datos_temp = {}; log_resultado = 'cancelado'; }\n  else if (text === 's' || text === 'si' || text === 'sí') {\n    const ticketId = generarTicketId();\n    const fechaCreacion = new Date().toISOString().slice(0,19).replace('T',' ');\n    ticket_data = { id_ticket: ticketId, tipo: datosTmp.tipo, prioridad: datosTmp.prioridad, descripcion: datosTmp.descripcion, estado: 'Abierto', creado_por: username, fecha_creacion: fechaCreacion };\n    mensaje = `✅ *¡Solicitud creada exitosamente!*\\n\\n🎫 *Ticket:* \\`${ticketId}\\`\\n🖥️ *Tipo:* ${datosTmp.tipo}\\n⚡ *Prioridad:* ${datosTmp.prioridad}\\n🟡 *Estado:* Abierto\\n\\n📌 _Guarda tu número de ticket para hacer seguimiento._${VOLVER}`;\n    nuevo_datos_temp = {}; accion = 'crear_ticket'; log_resultado = 'ticket_creado_' + ticketId;\n  }  else { mensaje = `⚠️ *Respuesta no reconocida*\\n\\n✅ Escribe *S* para confirmar\\n❌ Escribe *N* para cancelar`; nuevo_estado = 'CREAR_CONFIRMAR'; nuevo_datos_temp = datosTmp; log_resultado = 'opcion_invalida'; }\n}\nelse if (estado === 'CONSULTAR_ID') {\n  if (text === '9') { mensaje = `❌ Cancelado.${VOLVER}`; log_resultado = 'cancelado'; }\n  else {\n    consulta_id = $('Edit Fields').first().json.text.trim().toUpperCase();\n    accion = 'consultar_ticket';\n    log_resultado = 'buscar_' + consulta_id;\n  }\n}\nelse { mensaje = `⚙️ Reiniciando...${VOLVER}`; nuevo_datos_temp = {}; log_resultado = 'reset'; }\n\nreturn [{\n  json: { chatId, username, firstName: nombreUsuario, mensaje, nuevo_estado, nuevo_datos_temp: JSON.stringify(nuevo_datos_temp), accion, ticket_data, consulta_id, sesionExiste, timestamp, log_pantalla: estado, log_opcion: text, log_resultado }\n}];"
+        "jsCode": "// ─── 1. Recoger datos ───\nconst vars      = $('Edit Fields').first().json;\nconst chatId    = vars.chatId;\nconst username  = vars.username;\nconst firstName = vars.firstName;\nconst text      = vars.text.toLowerCase().trim();\nconst timestamp = vars.timestamp;\n\n// ─── 2. Parsear sesión ───\nconst sesionItems = $('Leer Sesion').all();\nlet estado       = 'MENU';\nlet datosTmp     = {};\nlet sesionExiste = false;\n\nif (sesionItems.length > 0 && sesionItems[0].json.telegram_user) {\n  estado       = sesionItems[0].json.estado || 'MENU';\n  sesionExiste = true;\n  try {\n    datosTmp = JSON.parse(sesionItems[0].json.datos_temp || '{}');\n  } catch(e) { datosTmp = {}; }\n}\n\n// ─── 3. Validar usuario ───\nconst userItems = $('Leer Usuario').all();\nlet usuarioActivo = false;\nlet nombreUsuario = firstName;\n\nif (userItems.length > 0 && userItems[0].json.telegram_user) {\n  const u = userItems[0].json;\n  usuarioActivo = (u.activo === true || u.activo === 'TRUE' || u.activo === 'true');\n  nombreUsuario = u.nombre || firstName;\n}\n\nif (!usuarioActivo) {\n  return [{\n    json: {\n      chatId, username,\n      mensaje: `⛔ Lo siento, tu usuario no está registrado o no está activo.\\n\\nContacta al administrador.`,\n      nuevo_estado: 'MENU',\n      nuevo_datos_temp: '{}',\n      accion: 'solo_responder',\n      sesionExiste,\n      log_pantalla: estado,\n      log_opcion: text,\n      log_resultado: 'usuario_inactivo'\n    }\n  }];\n}\n\n// ─── 4. Textos ───\nconst MENU_PRINCIPAL = `🤖 *HelpDeskBot*\\n\\n_Por favor, escribe el número de la opción que deseas usar:_\\n\\n🆘 *0* · Ayuda\\n🆕 *1* · Crear solicitud\\n🔎 *2* · Consultar ticket\\n📁 *3* · Mis solicitudes\\n📈 *4* · Reportes\\n🔧 *5* · Configuración`;\nconst MENU_CREAR = `📝 *Nueva Solicitud*\\n\\n_Selecciona el tipo de solicitud:_\\n\\n🖥️ *1* · Soporte técnico \\n_problemas con equipos o sistemas_\\n\\n📋 *2* · Solicitud administrativa \\n_trámites y gestiones internas_\\n\\n💬 *3* · Consulta general \\n_dudas o preguntas diversas_\\n\\n❌ *9* · Cancelar`;\nconst MENU_PRIORIDAD = `⚡ *Prioridad*\\n\\n_Indica el nivel de urgencia de tu solicitud:_\\n\\n🔴 *1* · Alta  \\n_requiere atención inmediata_\\n\\n🟠 *2* · Media \\n_puede atenderse en el corto plazo_\\n\\n🟢 *3* · Baja \\n_sin urgencia, puede esperar_\\n\\n❌ *9* · Cancelar`;\nconst AYUDA = `ℹ️ *Ayuda — HelpDeskBot*\\n\\n🤖 _Soy un bot de soporte interno. Puedo ayudarte a gestionar tus solicitudes de forma rápida y ordenada._\\n\\n*¿Qué puedo hacer?*\\n\\n🆕 *Crear* tickets de soporte técnico, administrativo o consultas\\n🔎 *Consultar* el estado de cualquier ticket por su ID\\n📁 *Ver* todas tus solicitudes registradas\\n📈 *Reportes* con estadísticas generales\\n\\n*¿Cómo navegar?*\\n\\n📌 Escribe el _número_ de la opción que deseas usar\\n❌ Escribe _9_ en cualquier momento para cancelar\\n🏠 Escribe _9_ en algunos menus para volver al inicio\\n\\n⚙️ _Los estados se actualizan automáticamente: Abierto → En proceso → Cerrado_`;\nconst VOLVER = `\\n\\n*Escribe 9 para volver al inicio.*`;\n\nconst TIPOS = { '1': 'Soporte técnico', '2': 'Solicitud administrativa', '3': 'Consulta general' };\nconst PRIORIDADES = { '1': 'Alta', '2': 'Media', '3': 'Baja' };\n\nfunction generarTicketId() {\n  const fecha = new Date().toISOString().slice(0,10).replace(/-/g,'');\n  const rand  = Math.floor(Math.random() * 9000) + 1000;\n  return `TKT-${fecha}-${rand}`;\n}\n\nlet mensaje          = '';\nlet nuevo_estado     = 'MENU';\nlet nuevo_datos_temp = {};\nlet accion           = 'solo_responder';\nlet ticket_data      = null;\nlet consulta_id      = null;\nlet log_resultado    = 'ok';\n\n// ─── Estados ───\nif (estado === 'MENU') {\n  switch(text) {\n    case '0': mensaje = AYUDA; break;\n    case '1': mensaje = MENU_CREAR; nuevo_estado = 'CREAR_TIPO'; break;\n    case '2':\n      mensaje = `🔎 *Consultar Ticket*\\n\\nEscribe el ID del ticket que deseas consultar.\\n\\n📌 _Ejemplo: TKT-20240115-1234_\\n\\n❌ *9* · Cancelar`;\n      nuevo_estado = 'CONSULTAR_ID'; break;\n    case '3': accion = 'mis_solicitudes'; break;\n    case '4':\n      mensaje = `📊 *Reportes*\\n\\n_Selecciona el tipo de reporte:_\\n\\n📋 *1* · Reporte por tipo de solicitud\\n\\n❌ *9* · Volver al menú principal`;\n      nuevo_estado = 'REPORTES_MENU'; break;\n    case '5': mensaje = `⚙️ *Configuración*\\n\\nNo hay opciones disponibles.${VOLVER}`; break;\n    case '9':\n    case 'menú':\n    case 'menu':\n      mensaje = MENU_PRINCIPAL; break;\n    default:\n      mensaje = !sesionExiste\n        ? `Hola, soy HelpDeskBot 👋\\n\\nEstoy aquí para ayudarte con solicitudes de soporte.\\n\\n${MENU_PRINCIPAL}`\n        : `⚠️ Opción no reconocida.${VOLVER}`;\n      log_resultado = 'opcion_invalida';\n  }\n}\nelse if (estado === 'CREAR_TIPO') {\n  if (text === '9') { mensaje = `❌ Cancelado.${VOLVER}`; log_resultado = 'cancelado'; }\n  else if (['1','2','3'].includes(text)) { nuevo_datos_temp = { tipo: TIPOS[text] }; mensaje = MENU_PRIORIDAD; nuevo_estado = 'CREAR_PRIORIDAD'; }\n  else { mensaje = `⚠️ Opción inválida.\\n\\n${MENU_CREAR}`; nuevo_estado = 'CREAR_TIPO'; log_resultado = 'opcion_invalida'; }\n}\nelse if (estado === 'CREAR_PRIORIDAD') {\n  if (text === '9') { mensaje = `❌ Cancelado.${VOLVER}`; nuevo_datos_temp = {}; log_resultado = 'cancelado'; }\n  else if (['1','2','3'].includes(text)) { nuevo_datos_temp = { ...datosTmp, prioridad: PRIORIDADES[text] }; mensaje = `📝 *Descripción*\\n\\nEscribe una descripción clara de tu solicitud.\\n\\n📌 _Mínimo 10 caracteres_\\n\\n❌ *9* · Cancelar`; nuevo_estado = 'CREAR_DESCRIPCION'; }\n  else { mensaje = `⚠️ Opción inválida.\\n\\n${MENU_PRIORIDAD}`; nuevo_estado = 'CREAR_PRIORIDAD'; log_resultado = 'opcion_invalida'; }\n}\nelse if (estado === 'CREAR_DESCRIPCION') {\n  if (text === '9') { mensaje = `❌ Cancelado.${VOLVER}`; nuevo_datos_temp = {}; log_resultado = 'cancelado'; }\n  else if (text.length < 10) { mensaje = `⚠️ *Descripción muy corta*\\n\\nPor favor escribe al menos *10 caracteres*.\\n\\n📝 Intenta ser específico sobre el problema.`; nuevo_estado = 'CREAR_DESCRIPCION'; log_resultado = 'descripcion_corta'; }\n  else {\n    const desc = $('Edit Fields').first().json.text.trim();\n    nuevo_datos_temp = { ...datosTmp, descripcion: desc };\n    const fechaPreview = new Date().toISOString().slice(0,19).replace('T',' ');\n    mensaje = `📋 *Resumen de tu solicitud*\\n\\n🖥️ *Tipo:* ${datosTmp.tipo}\\n⚡ *Prioridad:* ${datosTmp.prioridad}\\n📄 *Descripción:* ${desc}\\n📅 *Fecha:* ${fechaPreview}\\n\\n¿Confirmas que deseas guardar esta solicitud?\\n\\n✅ *S* · Confirmar\\n❌ *N* · Cancelar`;\n    nuevo_estado = 'CREAR_CONFIRMAR';\n  }\n}\nelse if (estado === 'CREAR_CONFIRMAR') {\n  if (text === 'n' || text === 'no' || text === '9') { mensaje = `❌ Solicitud cancelada.${VOLVER}`; nuevo_datos_temp = {}; log_resultado = 'cancelado'; }\n  else if (text === 's' || text === 'si' || text === 'sí') {\n    const ticketId = generarTicketId();\n    const fechaCreacion = new Date().toISOString().slice(0,19).replace('T',' ');\n    ticket_data = { id_ticket: ticketId, tipo: datosTmp.tipo, prioridad: datosTmp.prioridad, descripcion: datosTmp.descripcion, estado: 'Abierto', creado_por: username, fecha_creacion: fechaCreacion };\n    mensaje = `✅ *¡Solicitud creada exitosamente!*\\n\\n🎫 *Ticket:* \\`${ticketId}\\`\\n🖥️ *Tipo:* ${datosTmp.tipo}\\n⚡ *Prioridad:* ${datosTmp.prioridad}\\n🟡 *Estado:* Abierto\\n\\n📌 _Guarda tu número de ticket para hacer seguimiento._${VOLVER}`;\n    nuevo_datos_temp = {}; accion = 'crear_ticket'; log_resultado = 'ticket_creado_' + ticketId;\n  }  else { mensaje = `⚠️ *Respuesta no reconocida*\\n\\n✅ Escribe *S* para confirmar\\n❌ Escribe *N* para cancelar`; nuevo_estado = 'CREAR_CONFIRMAR'; nuevo_datos_temp = datosTmp; log_resultado = 'opcion_invalida'; }\n}\nelse if (estado === 'CONSULTAR_ID') {\n  if (text === '9') { mensaje = `❌ Cancelado.${VOLVER}`; log_resultado = 'cancelado'; }\n  else {\n    consulta_id = $('Edit Fields').first().json.text.trim().toUpperCase();\n    accion = 'consultar_ticket';\n    log_resultado = 'buscar_' + consulta_id;\n  }\n}\n\nelse if (estado === 'REPORTES_MENU') {\n  if (text === '9') { mensaje = `❌ Cancelado.${VOLVER}`; log_resultado = 'cancelado'; }\n  else if (text === '1') {\n    accion = 'reporte_tipo';\n    log_resultado = 'reporte_tipo';\n  }\n  else { mensaje = `⚠️ Opción inválida.\\n\\n📋 *1* · Reporte por tipo de solicitud\\n❌ *9* · Volver al menú principal`; nuevo_estado = 'REPORTES_MENU'; log_resultado = 'opcion_invalida'; }\n}\n  \nelse { mensaje = `⚙️ Reiniciando...${VOLVER}`; nuevo_datos_temp = {}; log_resultado = 'reset'; }\n\n\nreturn [{\n  json: { chatId, username, firstName: nombreUsuario, mensaje, nuevo_estado, nuevo_datos_temp: JSON.stringify(nuevo_datos_temp), accion, ticket_data, consulta_id, sesionExiste, timestamp, log_pantalla: estado, log_opcion: text, log_resultado }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         -976,
-        -16
+        272
       ],
       "id": "6c6270e2-e2b0-4eff-a9cb-df8bbc8ad223",
       "name": "Logica"
@@ -277,6 +277,29 @@
                 ],
                 "combinator": "and"
               }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1fb66efd-d206-47d4-981f-c9768ab62244",
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "reporte_tipo",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
             }
           ]
         },
@@ -286,7 +309,7 @@
       "typeVersion": 3.4,
       "position": [
         -752,
-        -64
+        208
       ],
       "id": "650f6fc7-6961-41fc-b66d-7a4b03d1d1a6",
       "name": "Switch"
@@ -389,8 +412,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        -304,
-        -16
+        -80,
+        -112
       ],
       "id": "9d57f161-dd30-4b5a-af25-055c2e8778f6",
       "name": "Guardar Ticket",
@@ -426,7 +449,7 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        -528,
+        -304,
         -304
       ],
       "id": "705c844d-e43e-49e0-8c10-6ac64bf15952",
@@ -446,7 +469,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -304,
+        -80,
         -304
       ],
       "id": "a0ab567b-4af3-465e-b06c-cec7be18a1f6",
@@ -477,7 +500,7 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        -528,
+        -304,
         176
       ],
       "id": "1f1b782f-c6c9-4b8d-b620-8933a15b0f8d",
@@ -497,7 +520,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -304,
+        -80,
         176
       ],
       "id": "b3aad4ac-be89-4a85-86ea-416605482049",
@@ -520,7 +543,7 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        -528,
+        -304,
         368
       ],
       "id": "6dca3e93-28fb-400d-8925-9c3730f1ef77",
@@ -540,7 +563,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -304,
+        -80,
         368
       ],
       "id": "9e82a5da-5993-4719-9488-34024254909a",
@@ -548,13 +571,13 @@
     },
     {
       "parameters": {
-        "numberInputs": 5
+        "numberInputs": 6
       },
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -80,
-        -64
+        144,
+        48
       ],
       "id": "81826844-8f2c-466a-9ad5-e2b7f7b55937",
       "name": "Merge",
@@ -572,8 +595,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        368,
-        -16
+        592,
+        112
       ],
       "id": "8dfa9fe3-da94-4e71-bbf1-90cf95d0aa87",
       "name": "Enviar Respuesta",
@@ -610,8 +633,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        592,
-        -16
+        816,
+        112
       ],
       "id": "ce956120-ab14-4659-9ecf-63d03cd1d4f6",
       "name": "Buscar Sesion",
@@ -651,8 +674,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        816,
-        -16
+        1040,
+        112
       ],
       "id": "f6bbb02e-9b51-44e2-8512-7682531f8fc1",
       "name": "Existe la sesion?"
@@ -739,8 +762,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        1040,
-        -112
+        1264,
+        16
       ],
       "id": "fad8d17e-3f70-4e53-a4fb-a1bc3924f5f5",
       "name": "Actualizar Sesion",
@@ -819,8 +842,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        1040,
-        80
+        1264,
+        208
       ],
       "id": "b6be931e-ef1f-4ec1-87ad-faf295b43c7c",
       "name": "Crear Sesion",
@@ -836,8 +859,8 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        1264,
-        -16
+        1488,
+        112
       ],
       "id": "de7b07d9-bbeb-492f-83e7-dd40265e40a3",
       "name": "Merge Sesion",
@@ -921,8 +944,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        1488,
-        -16
+        1712,
+        112
       ],
       "id": "f5c87ef2-df5e-4546-89d0-97d84abf0096",
       "name": "Registrar Log",
@@ -957,8 +980,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        144,
-        -16
+        368,
+        112
       ],
       "id": "f1ec0e9d-55fc-4280-b846-8c861557ecfd",
       "name": "Normalizar Datos"
@@ -1010,6 +1033,132 @@
       ],
       "id": "e8c9d179-a8ba-47f1-a852-9966ab083bc5",
       "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "19Wfxhj7K_WJxq5NyarlXo7Ho7aZ8WaOAz5Osl3_PSMU",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "SOLICITUDES",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "creado_por",
+              "lookupValue": "={{ $('Edit Fields').first().json.username }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -528,
+        704
+      ],
+      "id": "6adfadd5-9ac9-4e9b-be75-46fa2187bec1",
+      "name": "Leer reporte ripo",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HJpswSCzEzS8jkuK",
+          "name": "Credenciales no Ia"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const todos = $input.all();\nconst origen = $('Logica').first().json;\nconst MENU = `\\n\\n*Escribe 9 para volver al inicio.*`;\n\nconst filtrados = todos.filter(t => t.json.id_ticket);\nconst totalInteracciones = todos.filter(t => t.json.timestamp && !t.json.id_ticket).length;\n\nif (filtrados.length === 0) {\n  return [{ json: { ...origen, mensaje: `📊 *Reporte por Tipo*\\n\\nNo hay solicitudes registradas aún.${MENU}` } }];\n}\n\nconst porTipo = {};\nfiltrados.forEach(t => {\n  const tipo = t.json.tipo || 'Desconocido';\n  if (!porTipo[tipo]) {\n    porTipo[tipo] = { total: 0, abiertas: 0, en_proceso: 0, cerradas: 0 };\n  }\n  porTipo[tipo].total++;\n  if (t.json.estado === 'Abierto') porTipo[tipo].abiertas++;\n  else if (t.json.estado === 'En proceso') porTipo[tipo].en_proceso++;\n  else if (t.json.estado === 'Cerrado') porTipo[tipo].cerradas++;\n});\n\nconst tipoMasFrecuente = Object.entries(porTipo).sort((a, b) => b[1].total - a[1].total)[0][0];\nconst totalSolicitudes = filtrados.length;\n\nconst detalleLines = Object.entries(porTipo).map(([tipo, datos], i) => {\n  return `${i + 1}) *${tipo}*\\n\\n   • Total: *${datos.total}*\\n   • Abiertas: *${datos.abiertas}*\\n   • En proceso: *${datos.en_proceso}*\\n   • Cerradas: *${datos.cerradas}*`;\n});\n\nconst mensaje = `📊 *Reporte de Solicitudes*\\n\\n━━━━━━━━━━━━━━━\\n📋 *Resumen General*\\n━━━━━━━━━━━━━━━\\n\\n🏆 *Tipo más frecuente:* ${tipoMasFrecuente}\\n📦 *Total solicitudes:* *${totalSolicitudes}*\\n💬 *Interacciones con el bot:* *${totalInteracciones}*\\n\\n━━━━━━━━━━━━━━━\\n📂 *Detalle por Tipo*\\n━━━━━━━━━━━━━━━\\n\\n${detalleLines.join('\\n\\n')}${MENU}`;\n\nreturn [{ json: { ...origen, mensaje } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        800
+      ],
+      "id": "a6534289-c96f-442f-9782-9ab0b80e3f9a",
+      "name": "Formatear Reporte tipo"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "Perfecto, estoy generando el reporte de solicitudes.\n\n⏳  Cargando...... ⏳\n\n",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -528,
+        512
+      ],
+      "id": "ca704499-1e08-4b33-92a0-14a0c79a6b62",
+      "name": "Mensaje de carga",
+      "webhookId": "52e86b57-36fe-43d7-8c7f-39c9eafe7935",
+      "credentials": {
+        "telegramApi": {
+          "id": "7skusCiksAD7hlRr",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "19Wfxhj7K_WJxq5NyarlXo7Ho7aZ8WaOAz5Osl3_PSMU",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "LOGS",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "telegram_user",
+              "lookupValue": "={{ $('Edit Fields').first().json.username }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -528,
+        896
+      ],
+      "id": "0304f19b-5d7c-4196-90b1-5311a6c5fb00",
+      "name": "Leer Logs",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HJpswSCzEzS8jkuK",
+          "name": "Credenciales no Ia"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -304,
+        800
+      ],
+      "id": "c4d4e71b-1d5f-42b3-bf2c-589b6e3da8ed",
+      "name": "Merge Reporte",
+      "alwaysOutputData": true
     }
   ],
   "pinData": {},
@@ -1102,6 +1251,23 @@
         [
           {
             "node": "Leer Reportes",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Leer reporte ripo",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Mensaje de carga",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Leer Logs",
             "type": "main",
             "index": 0
           }
@@ -1279,6 +1445,55 @@
           }
         ]
       ]
+    },
+    "Leer reporte ripo": {
+      "main": [
+        [
+          {
+            "node": "Merge Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Reporte tipo": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "Leer Logs": {
+      "main": [
+        [
+          {
+            "node": "Merge Reporte",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Mensaje de carga": {
+      "main": [
+        []
+      ]
+    },
+    "Merge Reporte": {
+      "main": [
+        [
+          {
+            "node": "Formatear Reporte tipo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
@@ -1287,7 +1502,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "3074d307-f69d-435e-8557-106b67b02562",
+  "versionId": "8b2f4f9c-545e-43de-885d-c4b0336dbb33",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "613cbc1bbc9fe9503bb32384b3b54e4bb9d0c39383f77838930f3fdda885818a"
